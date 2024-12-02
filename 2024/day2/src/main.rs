@@ -55,19 +55,19 @@ fn is_safe_removed(line: &str) -> bool{
 
 fn main() {
     let lines = lines_from_file("./input.txt");
-    // let mut sum = 0;
+    let mut sum = 0;
 
-    // for line in lines {
-    //     if is_safe(&line) {
-    //         sum += 1;
-    //     }
-    // }
+    for line in lines.clone() {
+        if is_safe(&line) {
+            sum += 1;
+        }
+    }
 
-    // println!("{}", sum);
+    println!("{}", sum);
 
     let mut sum = 0;
 
-    for line in lines {
+    for line in lines.clone() {
         if is_safe_removed(&line) {
             sum += 1;
         }
