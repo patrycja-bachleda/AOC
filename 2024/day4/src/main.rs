@@ -32,27 +32,6 @@ fn check_direction(table: &Vec<Vec<char>>, xpos: usize, ypos: usize, dx: isize, 
 }
 
 fn check_xmas_pattern(table: &Vec<Vec<char>>, xpos: usize, ypos: usize) -> bool {
-    // let directions: Vec<(isize, isize)> = vec![
-    //     (1, 1),  // down-right
-    //     (1, -1), // down-left
-    //     (-1, 1), // up-right
-    //     (-1, -1),// up-left
-    // ];
-    //
-    // for &(dx, dy) in &directions {
-    //     if xpos as isize + 2 * dx >= 0 && xpos as isize + 2 * dx < table.len() as isize &&
-    //         ypos as isize + 2 * dy >= 0 && ypos as isize + 2 * dy < table[0].len() as isize &&
-    //         xpos as isize - 2 * dx >= 0 && xpos as isize - 2 * dx < table.len() as isize &&
-    //         ypos as isize - 2 * dy >= 0 && ypos as isize - 2 * dy < table[0].len() as isize {
-    //         if table[xpos][ypos] == 'A' &&
-    //             table[(xpos as isize + dx) as usize][(ypos as isize + dy) as usize] == 'M' &&
-    //             table[(xpos as isize + 2 * dx) as usize][(ypos as isize + 2 * dy) as usize] == 'S' &&
-    //             table[(xpos as isize - dx) as usize][(ypos as isize - dy) as usize] == 'M' &&
-    //             table[(xpos as isize - 2 * dx) as usize][(ypos as isize - 2 * dy) as usize] == 'S' {
-    //             return true;
-    //         }
-    //     }
-    // }
     if xpos <= 0 || xpos >= table.len() - 1 || ypos <= 0 || ypos >= table[0].len() - 1 {
         return false;
     }
