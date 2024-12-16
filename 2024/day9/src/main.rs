@@ -1,7 +1,41 @@
-use std::collections::HashSet;
 use std::fs::read_to_string;
 
-fn create_input(test: String) -> Vec<i64>{
+fn create_input(test: String) -> Vec<DiskEntry> {
+    let mut memory = Vec::new();
+
+    for (idx, size) in test.trim().char_indices() {
+        let size = size.to_digit(10).unwrap() as usize;
+        if idx % 2 == 0 {
+            let id = idx / 2;
+            memory.push(DiskEntry::File { id, size });
+        } else {
+            memory.push(DiskEntry::FreeSpace { size });
+        }
+    }
+
+    memory
+}
+
+fn checksum(memory: &[DiskEntry]) {
+    let mut position = 0;
+    let mut result = 0;
+
+    for block in memory {
+        match *block {
+            DiskEntry::FreeSpace { size } => position += size,
+            DiskEntry::File { id, size } => {
+                for _ in 0..size {
+                    result += id * position;
+                    position += 1;
+                }
+            }
+        }
+    }
+
+    println!("{}", result);
+}
+
+fn d9_1(test: String){
     let mut list: Vec<i64> = vec![];
     let mut id = 0;
 
@@ -21,87 +55,6 @@ fn create_input(test: String) -> Vec<i64>{
         id += 1;
     }
 
-    list
-}
-
-fn checksum(list: Vec<i64>){
-    let mut sum = 0;
-
-    for i in 0..list.len(){
-        if list[i] != -1 {
-            sum += list[i] * i as i64;
-        }
-    }
-
-    println!("{}", sum);
-}
-fn d9_2(test: String){
-    let mut list: Vec<i64> = create_input(test);
-    let mut replacement = vec![];
-    let mut replace = vec![];
-    let mut back_pointer = list.len() - 1;
-    let mut origin;
-    let mut front_pointer;
-    let mut modified = HashSet::new();
-
-    while back_pointer > 0 {
-        println!("{:?}",list);
-        while list[back_pointer] == -1{
-            back_pointer -= 1;
-        }
-
-        // find values from back
-        origin = list[back_pointer];
-
-        while list[back_pointer] == origin && back_pointer > 0{
-            replacement.push(list[back_pointer]);
-            back_pointer -= 1;
-        }
-
-
-        // find place to replace
-        front_pointer = 0;
-        while front_pointer < back_pointer{
-            while list[front_pointer] != -1{
-                front_pointer += 1;
-            }
-
-            while list[front_pointer] == -1 && front_pointer < list.len()-1 {
-                replace.push(list[front_pointer]);
-                front_pointer += 1;
-            }
-
-            if replace.len() >= replacement.len(){
-                break;
-            }
-            replace = vec![];
-        }
-
-        front_pointer -= replace.len();
-
-        // replace if room otherwise move on
-        if replace.len() >= replacement.len() && !modified.contains(&origin){
-            for i in front_pointer..front_pointer + replacement.len(){
-                list[i] = replacement[0];
-                back_pointer += 1;
-                list[back_pointer] = -1;
-            }
-            if back_pointer > replacement.len(){
-                back_pointer -= replacement.len();
-            }
-        }
-
-        modified.insert(origin);
-        replacement = vec![];
-        replace = vec![];
-    }
-
-    checksum(list);
-}
-
-fn d9_1(test: String){
-    let mut list: Vec<i64> = create_input(test);
-
     'outer: for i in 0..list.len()-1{
         if list[i] == -1{
             for j in (0..list.len()).rev(){
@@ -117,12 +70,66 @@ fn d9_1(test: String){
         }
     }
 
-    checksum(list);
+    let mut sum = 0;
+
+    for i in 0..list.len(){
+        if list[i] != -1 {
+            sum += list[i] * i as i64;
+        }
+    }
+
+    println!("{}", sum);
+}
+
+enum DiskEntry {
+    FreeSpace { size: usize },
+    File { id: usize, size: usize },
+}
+
+fn d9_2(mut memory: Vec<DiskEntry>) {
+    let mut i = memory.len() - 1;
+    while i > 0 {
+        if let DiskEntry::File { id, size: filesize } = memory[i] {
+            let mut insertion_idx = 0;
+
+            loop {
+                if let DiskEntry::FreeSpace { size: freesize } = memory[insertion_idx] {
+                    if freesize > filesize {
+                        memory[i] = DiskEntry::FreeSpace { size: filesize };
+                        memory[insertion_idx] = DiskEntry::File { id, size: filesize };
+                        memory.insert(
+                            insertion_idx + 1,
+                            DiskEntry::FreeSpace {
+                                size: freesize - filesize,
+                            },
+                        );
+                        break;
+                    }
+
+                    if freesize == filesize {
+                        memory[i] = DiskEntry::FreeSpace { size: filesize };
+                        memory[insertion_idx] = DiskEntry::File { id, size: filesize };
+                        break;
+                    }
+                }
+
+                if insertion_idx == i {
+                    break;
+                }
+
+                insertion_idx += 1;
+            }
+        }
+        i -= 1;
+    }
+
+    checksum(&memory);
 }
 
 fn main() {
     let test = read_to_string("./input.txt").unwrap();
     // let test = "23331331214141314022333133121414131402";
+    let list = create_input(test);
     // d9_1(test.clone());
-    d9_2(test.clone().parse().unwrap());
+    d9_2(list);
 }
